@@ -38,6 +38,7 @@ namespace Capa_Vista_Estados_Financieros
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.Btn_Salir = new System.Windows.Forms.Button();
+            this.Btn_Generar_Reporte = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Dgv_EstadoDeFlujoDeEfectivo)).BeginInit();
             this.SuspendLayout();
             // 
@@ -150,7 +151,7 @@ namespace Capa_Vista_Estados_Financieros
             this.Btn_Salir.Cursor = System.Windows.Forms.Cursors.Hand;
             this.Btn_Salir.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.Btn_Salir.ForeColor = System.Drawing.Color.Black;
-            this.Btn_Salir.Location = new System.Drawing.Point(21, 530);
+            this.Btn_Salir.Location = new System.Drawing.Point(21, 620);
             this.Btn_Salir.Margin = new System.Windows.Forms.Padding(4);
             this.Btn_Salir.Name = "Btn_Salir";
             this.Btn_Salir.Size = new System.Drawing.Size(160, 82);
@@ -159,11 +160,26 @@ namespace Capa_Vista_Estados_Financieros
             this.Btn_Salir.UseVisualStyleBackColor = false;
             this.Btn_Salir.Click += new System.EventHandler(this.Btn_Salir_Click);
             // 
+            // Btn_Generar_Reporte
+            // 
+            this.Btn_Generar_Reporte.BackColor = System.Drawing.Color.White;
+            this.Btn_Generar_Reporte.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Btn_Generar_Reporte.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.Btn_Generar_Reporte.ForeColor = System.Drawing.Color.Black;
+            this.Btn_Generar_Reporte.Location = new System.Drawing.Point(21, 496);
+            this.Btn_Generar_Reporte.Margin = new System.Windows.Forms.Padding(4);
+            this.Btn_Generar_Reporte.Name = "Btn_Generar_Reporte";
+            this.Btn_Generar_Reporte.Size = new System.Drawing.Size(160, 74);
+            this.Btn_Generar_Reporte.TabIndex = 18;
+            this.Btn_Generar_Reporte.Text = "Generar Reporte";
+            this.Btn_Generar_Reporte.UseVisualStyleBackColor = false;
+            // 
             // Frm_EstadoDeFlujoDeEfectivo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1644, 737);
+            this.Controls.Add(this.Btn_Generar_Reporte);
             this.Controls.Add(this.Btn_Salir);
             this.Controls.Add(this.Btn_Generar_PDF);
             this.Controls.Add(this.Dgv_EstadoDeFlujoDeEfectivo);
@@ -193,5 +209,6 @@ namespace Capa_Vista_Estados_Financieros
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button Btn_Salir;
+        private System.Windows.Forms.Button Btn_Generar_Reporte;
     }
 }
