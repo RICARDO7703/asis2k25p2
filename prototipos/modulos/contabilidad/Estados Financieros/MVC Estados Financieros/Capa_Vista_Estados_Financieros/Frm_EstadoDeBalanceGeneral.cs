@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using Capa_Controlador_Estados_Financieros;
 using System.Data;
 using System.Linq;
+using System.IO;
+
 
 
 
@@ -24,6 +26,10 @@ namespace Capa_Vista_Estados_Financieros
         public Frm_EstadoBalanceGeneral()
         {
             InitializeComponent();
+
+            groupBox2.Anchor = AnchorStyles.Top;
+            Btn_Ver_Reporte.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
 
 
 
@@ -94,7 +100,6 @@ namespace Capa_Vista_Estados_Financieros
             Nud_Mes.Visible = esHistorico;
 
             // Bloquear o habilitar el botón de reporte
-            Btn_Generar_Reporte.Enabled = !esHistorico;
         }
 
         // -------------------------------------------------------------------------
@@ -316,7 +321,146 @@ namespace Capa_Vista_Estados_Financieros
             groupBox1.Left = (this.ClientSize.Width - groupBox1.Width) / 2;
         }
 
+        private void Btn_VerReporte_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Validar si hay filas cargadas
+                if (Dgv_EstadoBalanceGeneral.Rows.Count == 0)
+                {
+                    MessageBox.Show("Primero genere los datos antes de ver el reporte.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
+                // Crear DataTable manualmente desde el contenido del DataGridView
+                DataTable dt = new DataTable();
+                dt.Columns.Add("Cuenta");
+                dt.Columns.Add("Nombre");
+                dt.Columns.Add("Debe", typeof(decimal));
+                dt.Columns.Add("Haber", typeof(decimal));
+
+                // Llenar el DataTable con los datos del grid
+                foreach (DataGridViewRow fila in Dgv_EstadoBalanceGeneral.Rows)
+                {
+                    if (!fila.IsNewRow)
+                    {
+                        string cuenta = "";
+                        string nombre = "";
+                        string debeStr = "";
+                        string haberStr = "";
+
+                        if (fila.Cells["Cuenta"].Value != null)
+                            cuenta = fila.Cells["Cuenta"].Value.ToString();
+                        if (fila.Cells["Nombre"].Value != null)
+                            nombre = fila.Cells["Nombre"].Value.ToString();
+
+                        if (fila.Cells["Debe"].Value != null)
+                            debeStr = fila.Cells["Debe"].Value.ToString().Replace("Q", "").Replace(",", "").Trim();
+                        if (fila.Cells["Haber"].Value != null)
+                            haberStr = fila.Cells["Haber"].Value.ToString().Replace("Q", "").Replace(",", "").Trim();
+
+                        object debe, haber;
+
+                        if (string.IsNullOrWhiteSpace(debeStr))
+                            debe = DBNull.Value;
+                        else
+                            debe = Convert.ToDecimal(debeStr);
+
+                        if (string.IsNullOrWhiteSpace(haberStr))
+                            haber = DBNull.Value;
+                        else
+                            haber = Convert.ToDecimal(haberStr);
+
+                        dt.Rows.Add(cuenta, nombre, debe, haber);
+                    }
+                }
+
+                // Validar si hay datos
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No hay datos para mostrar en el reporte.",
+                                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Crear el DataSet y asignar datos
+                DataSet ds = new DataSet();
+                ds.Tables.Add(dt.Copy());
+                ds.Tables[0].TableName = "BalanceGeneral"; // Nombre debe coincidir con el XSD
+
+                // Crear el reporte y asignar fuente de datos
+                Rpt_BalanceGeneral rpt = new Rpt_BalanceGeneral();
+                rpt.SetDataSource(ds);
+
+                // Asignar los parámetros
+                string tipoOrigen = "Actual";
+                if (Cbo_TipoOrigen.SelectedItem != null)
+                    tipoOrigen = Cbo_TipoOrigen.SelectedItem.ToString();
+
+                rpt.SetParameterValue("TipoOrigen", tipoOrigen);
+                rpt.SetParameterValue("Nivel", Convert.ToInt32(Num_Nivel.Value));
+                rpt.SetParameterValue("FechaActual", DateTime.Now);
+
+                // Mostrar en visor
+                Frm_VisorReporte_BalanceGeneral visor = new Frm_VisorReporte_BalanceGeneral();
+                visor.crystalReportViewer1.ReportSource = rpt;
+                visor.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al generar el reporte: " + ex.Message);
+            }
+        }
+
+        private void Btn_Ayuda_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Ruta relativa donde está tu archivo CHM (igual que tu compañero)
+                const string subRutaAyuda = @"ayuda\modulos\contabilidad\Ayudas\Ayuda Conta.chm";
+
+                string rutaEncontrada = null;
+                DirectoryInfo dir = new DirectoryInfo(Application.StartupPath);
+
+                // Busca la carpeta hacia arriba (10 niveles)
+                for (int i = 0; i < 10 && dir != null; i++, dir = dir.Parent)
+                {
+                    string candidata = Path.Combine(dir.FullName, subRutaAyuda);
+                    if (File.Exists(candidata))
+                    {
+                        rutaEncontrada = candidata;
+                        break;
+                    }
+                }
+
+                // Ruta de respaldo (opcional)
+                string rutaAbsolutaRespaldo =
+                    @"C:\Users\arone\OneDrive\Escritorio\asis2k25p2_Contabilidad\ayuda\modulos\contabilidad\Ayudas\Ayuda Conta.chm";
+
+                if (rutaEncontrada == null && File.Exists(rutaAbsolutaRespaldo))
+                    rutaEncontrada = rutaAbsolutaRespaldo;
+
+                if (rutaEncontrada != null)
+                {
+                    // Esta es la ruta INTERNA del archivo dentro del CHM
+                    string rutaInterna = @"Balance General/Ayuda - Balance Genral.html";
+
+
+                    Help.ShowHelp(this, rutaEncontrada, HelpNavigator.Topic, rutaInterna);
+                }
+                else
+                {
+                    MessageBox.Show("No se encontró el archivo de ayuda.", "Advertencia",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al abrir la ayuda:\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
 
     }
